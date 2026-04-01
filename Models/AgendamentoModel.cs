@@ -5,14 +5,40 @@ namespace Agendamento.Models
     public class AgendamentoModel
     {
         [JsonConstructor]
-        public AgendamentoModel(string nomePaciente, DateTime horario)
+        public AgendamentoModel(string nomePaciente, DateTime horario, string status)
         {
             Id = Guid.NewGuid();
             NomePaciente = nomePaciente;
             Horario = horario;
+            Status = status;
         }
         public Guid Id { get; init; }
         public string NomePaciente { get; private set; }
         public DateTime Horario { get; private set; }
+
+        public string Status { get; private set; } = AgendamentoStatus.Aguardando.ToString();
+
+        public void Update(string nomePaciente, DateTime horario)
+        {
+            NomePaciente = nomePaciente;
+            Horario = horario;
+        }
+
+        public void MudaStatus(AgendamentoStatus status)
+        {
+            Status = status.ToString();
+        }
+
     }
+
+    public enum AgendamentoStatus
+    {
+        Aguardando,
+        Em_Atendimento,
+        Realizado,
+        Cancelado
+    }
+
+
+
 }
