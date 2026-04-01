@@ -19,9 +19,31 @@ namespace Agendamento.Routes
                 await context.SaveChangesAsync();
             });
 
+            // Metodos Get
+
+            // Mostra todos os agendamentos
+
             route.MapGet("", async (AgendamentoContext context) =>
             {
                 var agendamentos = await context.Agendamentos.ToListAsync();
+                return Results.Ok(agendamentos);
+            });
+
+            // Mostra o agendamento pelo ID
+
+            route.MapGet("{id:guid}", async (Guid id ,AgendamentoContext context) =>
+            {
+                var agendamento = await context.Agendamentos.FindAsync(id);
+                return Results.Ok(agendamento);
+            });
+
+            // Mostra agendamento pelo nome do Paciente
+
+            route.MapGet("{nome}", async (String nome ,AgendamentoContext context) =>
+            {
+                var agendamentos = await context.Agendamentos
+                    .Where(a => a.NomePaciente.ToLower().Contains(nome.ToLower()))
+                    .ToListAsync();
                 return Results.Ok(agendamentos);
             });
 

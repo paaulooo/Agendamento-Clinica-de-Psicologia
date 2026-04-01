@@ -18,7 +18,7 @@ namespace Agendamento.Models
 
         public string Status { get; private set; } = AgendamentoStatus.Aguardando.ToString();
 
-        public void Update(string nomePaciente, DateTime horario)
+        public void Update(string nomePaciente, DateTime horario) // Somente em caso de atualizar nome e horario.
         {
             NomePaciente = nomePaciente;
             Horario = horario;
