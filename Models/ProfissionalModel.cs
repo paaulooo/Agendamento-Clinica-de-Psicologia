@@ -4,6 +4,11 @@ namespace Agendamento.Models
 {
     public class ProfissionalModel
     {
+        protected ProfissionalModel()
+        {
+            
+        }
+
         [JsonConstructor]
         public ProfissionalModel(string nome, string crm)
         {

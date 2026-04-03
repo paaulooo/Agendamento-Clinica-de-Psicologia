@@ -4,6 +4,7 @@ namespace Agendamento.Models
 {
     public class AgendamentoModel
     {
+
         [JsonConstructor]
         public AgendamentoModel(string nomePaciente, DateTime horario, string status)
         {

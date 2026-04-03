@@ -6,6 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<AgendamentoContext>();
+builder.Services.AddScoped<ProfissionalContext>();
+
 
 var app = builder.Build();
 
