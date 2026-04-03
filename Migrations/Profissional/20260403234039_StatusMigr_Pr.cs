@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Agendamento.Migrations.Profissional
 {
     /// <inheritdoc />
-    public partial class StatusMigr_3 : Migration
+    public partial class StatusMigr_Pr : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -1,5 +1,6 @@
 using Agendamento.Data;
 using Agendamento.Routes;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.AgendamentoRoutes();
+app.ProfissionalRoutes();
 
 app.UseHttpsRedirection();
 

@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Agendamento.Migrations.Profissional
 {
     [DbContext(typeof(ProfissionalContext))]
-    [Migration("20260403221636_StatusMigr_3")]
-    partial class StatusMigr_3
+    [Migration("20260403234039_StatusMigr_Pr")]
+    partial class StatusMigr_Pr
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
