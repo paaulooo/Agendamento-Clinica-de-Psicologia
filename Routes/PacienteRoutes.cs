@@ -1,3 +1,7 @@
+using System.Linq;
+using Agendamento.Data;
+using Agendamento.Models;
+
 public static class PacienteRoutes
 {
     public static void MapPacienteRoutes(this WebApplication app)
