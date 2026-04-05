@@ -21,6 +21,7 @@ if (app.Environment.IsDevelopment())
 
 app.AgendamentoRoutes();
 app.ProfissionalRoutes();
+app.MapPacienteRoutes();
 
 app.UseHttpsRedirection();
 
