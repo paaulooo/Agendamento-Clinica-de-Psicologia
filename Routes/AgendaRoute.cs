@@ -9,9 +9,15 @@ public static class AgendaRoutes
 		app.MapGet("/agenda/{profissionalId}", (Guid profissionalId, [FromServices] AgendamentoContext db) =>
 		{
 			var agenda = db.Agendamentos
+				.ToList()
 				.Where(a => a.ProfissionaisDesignados.Contains(profissionalId))
-				.ToList();
-
+				.Select(a => new
+				{
+					diaSemana = a.Data.DayOfWeek.ToString(),
+					hora = a.Data.Hour,
+					status = a.Status
+				});
+			
 			return Results.Ok(agenda);
         });
     }
