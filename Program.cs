@@ -7,7 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<AgendamentoContext>();
-builder.Services.AddScoped<ProfissionalContext>();
+builder.Services.AddDbContext<ProfissionalContext>(options => options.UseSqlite("Data Source=profissional.Sqlite"));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
 var app = builder.Build();
@@ -22,8 +23,12 @@ if (app.Environment.IsDevelopment())
 app.AgendamentoRoutes();
 app.ProfissionalRoutes();
 app.MapPacienteRoutes();
+app.MapAgendaRoutes();
 
 app.UseHttpsRedirection();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.Run();
 
