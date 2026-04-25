@@ -7,10 +7,6 @@ namespace Agendamento.Data
     {
         public DbSet<ProfissionalModel> Profissionais { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlite("Data Source=profissional.sqlite");
-            base.OnConfiguring(optionsBuilder);
-        }
+        public ProfissionalContext(DbContextOptions<ProfissionalContext> options) : base(options) { }
     }
 }

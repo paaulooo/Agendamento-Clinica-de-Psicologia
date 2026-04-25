@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -15,9 +16,11 @@ namespace Agendamento.Migrations
                 name: "Agendamentos",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    NomePaciente = table.Column<string>(type: "TEXT", nullable: false),
-                    Horario = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    NomePaciente = table.Column<string>(type: "text", nullable: false),
+                    Horario = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ProfissionaisDesignados = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

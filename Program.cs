@@ -6,8 +6,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddScoped<AgendamentoContext>();
-builder.Services.AddScoped<ProfissionalContext>();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<AgendamentoContext>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddDbContext<ProfissionalContext>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddDbContext<PacienteContext>(options =>
+    options.UseNpgsql(connectionString));
 
 
 var app = builder.Build();
