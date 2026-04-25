@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 
 namespace Agendamento.Data
 {
@@ -7,8 +8,8 @@ namespace Agendamento.Data
     {
         public AgendamentoContext CreateDbContext(string[] args)
         {
-            var connString = Environment.GetEnvironmentVariable("SUPABASE_CONNECTION_STRING")
-                ?? throw new InvalidOperationException("Variável de ambiente SUPABASE_CONNECTION_STRING não definida.");
+            var connString = DesignTimeHelper.BuildConfiguration().GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection não definida.");
             var options = new DbContextOptionsBuilder<AgendamentoContext>()
                 .UseNpgsql(connString)
                 .Options;
@@ -20,8 +21,8 @@ namespace Agendamento.Data
     {
         public ProfissionalContext CreateDbContext(string[] args)
         {
-            var connString = Environment.GetEnvironmentVariable("SUPABASE_CONNECTION_STRING")
-                ?? throw new InvalidOperationException("Variável de ambiente SUPABASE_CONNECTION_STRING não definida.");
+            var connString = DesignTimeHelper.BuildConfiguration().GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection não definida.");
             var options = new DbContextOptionsBuilder<ProfissionalContext>()
                 .UseNpgsql(connString)
                 .Options;
@@ -33,12 +34,23 @@ namespace Agendamento.Data
     {
         public PacienteContext CreateDbContext(string[] args)
         {
-            var connString = Environment.GetEnvironmentVariable("SUPABASE_CONNECTION_STRING")
-                ?? throw new InvalidOperationException("Variável de ambiente SUPABASE_CONNECTION_STRING não definida.");
+            var connString = DesignTimeHelper.BuildConfiguration().GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection não definida.");
             var options = new DbContextOptionsBuilder<PacienteContext>()
                 .UseNpgsql(connString)
                 .Options;
             return new PacienteContext(options);
         }
+    }
+
+    internal static class DesignTimeHelper
+    {
+        public static IConfiguration BuildConfiguration() =>
+            new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true)
+                .AddJsonFile("appsettings.Development.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
     }
 }
