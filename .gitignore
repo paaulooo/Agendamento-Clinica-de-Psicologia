@@ -365,3 +365,6 @@ FodyWeavers.xsd
 # Credenciais locais - nunca commitar
 appsettings.Development.json
 .env
+
+# Claude Code
+.claude/
