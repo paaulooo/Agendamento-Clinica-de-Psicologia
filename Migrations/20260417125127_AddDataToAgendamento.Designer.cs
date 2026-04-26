@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Agendamento.Migrations
 {
     [DbContext(typeof(AgendamentoContext))]
-    [Migration("20260330233702_Initial")]
-    partial class Initial
+    [Migration("20260417125127_AddDataToAgendamento")]
+    partial class AddDataToAgendamento
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,6 +30,14 @@ namespace Agendamento.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("NomePaciente")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("ProfissionaisDesignados")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
