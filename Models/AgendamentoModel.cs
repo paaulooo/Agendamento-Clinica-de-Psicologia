@@ -17,7 +17,7 @@ namespace Agendamento.Models
         public string NomePaciente { get; private set; }
         public DateTime Horario { get; private set; }
 
-        public List<Guid> ProfissionaisDesignados { get; private set; } // Lista de profissionais associados ao agendamento 
+        public List<Guid> ProfissionaisDesignados { get; private set; } = []; // Lista de profissionais associados ao agendamento
 
         public string Status { get; private set; } = AgendamentoStatus.Aguardando.ToString();
 

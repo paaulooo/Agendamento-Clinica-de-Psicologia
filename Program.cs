@@ -6,9 +6,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddScoped<AgendamentoContext>();
-builder.Services.AddDbContext<ProfissionalContext>(options => options.UseSqlite("Data Source=profissional.Sqlite"));
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<AgendamentoContext>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddDbContext<ProfissionalContext>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddDbContext<PacienteContext>(options =>
+    options.UseNpgsql(connectionString));
 
 
 var app = builder.Build();
@@ -20,15 +27,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.AgendamentoRoutes();
 app.ProfissionalRoutes();
 app.MapPacienteRoutes();
 app.MapAgendaRoutes();
 
-app.UseHttpsRedirection();
-
-app.UseDefaultFiles();
-app.UseStaticFiles();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.Run();
+
+public partial class Program { }
 

@@ -7,10 +7,6 @@ namespace Agendamento.Data
     {
         public DbSet<AgendamentoModel> Agendamentos { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlite("Data Source=agendamento.sqlite");
-            base.OnConfiguring(optionsBuilder);
-        }
+        public AgendamentoContext(DbContextOptions<AgendamentoContext> options) : base(options) { }
     }
 }
