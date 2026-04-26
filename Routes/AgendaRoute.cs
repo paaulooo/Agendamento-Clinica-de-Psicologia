@@ -13,7 +13,16 @@ public static class AgendaRoutes
 				.Where(a => a.ProfissionaisDesignados.Contains(profissionalId))
 				.Select(a => new
 				{
-					diaSemana = a.Data.DayOfWeek.ToString(),
+					diaSemana = a.Data.DayOfWeek switch
+				{
+					DayOfWeek.Monday    => "Seg",
+					DayOfWeek.Tuesday   => "Ter",
+					DayOfWeek.Wednesday => "Qua",
+					DayOfWeek.Thursday  => "Quin",
+					DayOfWeek.Friday    => "Sex",
+					DayOfWeek.Saturday  => "Sab",
+					_                   => null
+				},
 					hora = a.Data.Hour,
 					status = a.Status
 				});

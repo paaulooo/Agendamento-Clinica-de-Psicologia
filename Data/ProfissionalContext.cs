@@ -11,7 +11,5 @@ namespace Agendamento.Data
         }
 
         public DbSet<ProfissionalModel> Profissionais { get; set; }
-
-        public ProfissionalContext(DbContextOptions<ProfissionalContext> options) : base(options) { }
     }
 }
