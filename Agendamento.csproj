@@ -22,4 +22,10 @@
     <Folder Include="Converters\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Agendamento.Tests\**" />
+    <Content Remove="Agendamento.Tests\**" />
+    <None Remove="Agendamento.Tests\**" />
+  </ItemGroup>
+
 </Project>
