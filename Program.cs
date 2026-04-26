@@ -33,6 +33,7 @@ app.UseStaticFiles();
 app.AgendamentoRoutes();
 app.ProfissionalRoutes();
 app.MapPacienteRoutes();
+app.MapAgendaRoutes();
 
 if (!app.Environment.IsDevelopment())
 {

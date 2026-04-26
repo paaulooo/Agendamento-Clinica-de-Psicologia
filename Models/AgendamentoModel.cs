@@ -32,6 +32,8 @@ namespace Agendamento.Models
             Status = status.ToString();
         }
 
+        public DateTime Data { get; set; }
+
     }
 
     public enum AgendamentoStatus
