@@ -32,7 +32,13 @@ namespace Agendamento.Models
             Status = status.ToString();
         }
 
-        public DateTime Data { get; set; }
+        public void AdicionarProfissional(Guid profissionalId)
+        {
+            if (!ProfissionaisDesignados.Contains(profissionalId))
+            {
+                ProfissionaisDesignados.Add(profissionalId);
+            }
+        }
 
     }
 
