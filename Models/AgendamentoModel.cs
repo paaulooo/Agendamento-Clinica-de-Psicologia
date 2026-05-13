@@ -47,7 +47,11 @@ namespace Agendamento.Models
         Aguardando,
         Em_Atendimento,
         Realizado,
-        Cancelado
+        Cancelado,
+        Atendimento,
+        Online,
+        CLS,
+        Indisponivel
     }
 
 

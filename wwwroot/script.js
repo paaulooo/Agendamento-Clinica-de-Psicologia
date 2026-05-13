@@ -44,12 +44,12 @@ function montarAgenda(dados) {
     tabela.innerHTML = "";
 
     const dias = [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday"
+        "Segunda",
+        "Terça",
+        "Quarta",
+        "Quinta",
+        "Sexta",
+        "Sábado"
     ];
 
     let header = "<tr><th>Hora</th>";
@@ -74,12 +74,49 @@ function montarAgenda(dados) {
             );
 
             let texto = "";
+            let cor = "white";
+
+            if (item) {
+
+                texto = item.status;
+
+                switch (item.status) {
+
+                    case "Atendimento":
+                        cor = "#8ecae6";
+                        break;
+
+                    case "Online":
+                        cor = "#90be6d";
+                        break;
+
+                    case "CLS":
+                        cor = "#f9c74f";
+                        break;
+
+                    case "Indisponível":
+                        cor = "#adb5bd";
+                        break;
+
+                    default:
+                        cor = "#ffffff";
+                        break;
+                }
+            }
 
             if (item) {
                 texto = item.paciente;
             }
 
-            linha += `<td>${texto}</td>`;
+            linha += `
+            <td style="
+                background:${cor};
+                text-align:center;
+                font-weight:bold;
+            ">
+                ${texto}
+            </td>`;
+
         });
 
         linha += "</tr>";

@@ -14,7 +14,7 @@ namespace Agendamento.Routes
             //route.MapGet("", () => new AgendamentoModel("", ""));
             route.MapPost("", async (AgendamentoRequest req, AgendamentoContext context) =>
             {
-                var agendamento = new AgendamentoModel(req.nomePaciente, req.horario, AgendamentoStatus.Aguardando.ToString());
+                var agendamento = new AgendamentoModel(req.nomePaciente, req.horario, req.status.ToString());
                 await context.AddAsync(agendamento);
                 await context.SaveChangesAsync();
             });
