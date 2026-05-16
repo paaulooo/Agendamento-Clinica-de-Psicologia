@@ -30,6 +30,14 @@ if (app.Environment.IsDevelopment())
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+// Serve admin.html em /admin (sem extensão)
+app.MapGet("/admin", async context =>
+{
+    context.Response.ContentType = "text/html; charset=utf-8";
+    await context.Response.SendFileAsync(
+        Path.Combine(app.Environment.WebRootPath, "admin.html"));
+});
+
 app.AgendamentoRoutes();
 app.ProfissionalRoutes();
 app.MapPacienteRoutes();

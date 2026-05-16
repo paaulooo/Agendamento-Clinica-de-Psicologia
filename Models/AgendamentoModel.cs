@@ -1,9 +1,13 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Agendamento.Models
 {
     public class AgendamentoModel
     {
+
+        // Construtor sem parâmetros para o EF Core conseguir materializar entidades do banco
+        protected AgendamentoModel() { }
 
         [JsonConstructor]
         public AgendamentoModel(string nomePaciente, DateTime horario, string status)
@@ -32,7 +36,15 @@ namespace Agendamento.Models
             Status = status.ToString();
         }
 
-        public DateTime Data { get; set; }
+        public void SetProfissionais(IEnumerable<Guid> ids)
+        {
+            // Modifica a lista in-place para que o EF Core detecte a mudança corretamente
+            ProfissionaisDesignados.Clear();
+            ProfissionaisDesignados.AddRange(ids);
+        }
+
+        [NotMapped]
+        public DateTime Data => Horario;
 
     }
 

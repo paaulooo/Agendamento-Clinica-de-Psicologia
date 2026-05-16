@@ -15,8 +15,11 @@ namespace Agendamento.Routes
             route.MapPost("", async (AgendamentoRequest req, AgendamentoContext context) =>
             {
                 var agendamento = new AgendamentoModel(req.nomePaciente, req.horario, AgendamentoStatus.Aguardando.ToString());
+                if (req.profissionaisDesignados is { Count: > 0 })
+                    agendamento.SetProfissionais(req.profissionaisDesignados);
                 await context.AddAsync(agendamento);
                 await context.SaveChangesAsync();
+                return Results.Ok(agendamento);
             });
 
             // Metodos Get
@@ -59,9 +62,26 @@ namespace Agendamento.Routes
                 else
                 {
                     agendamento.Update(req.nomePaciente, req.horario);
+                    // Só atualiza profissionais se a lista for explicitamente fornecida e não vazia
+                    // Lista null ou vazia = preservar a associação existente
+                    if (req.profissionaisDesignados is { Count: > 0 })
+                        agendamento.SetProfissionais(req.profissionaisDesignados);
                     await context.SaveChangesAsync();
                     return Results.Ok(agendamento);
                 }
+            });
+
+            // Associa um profissional ao agendamento
+            route.MapPatch("/{id:guid}/profissional", async (Guid id, AgendamentoContext context, [FromQuery] Guid profissionalId) =>
+            {
+                var agendamento = await context.Agendamentos.FindAsync(id);
+                if (agendamento is null) return Results.NotFound();
+
+                if (!agendamento.ProfissionaisDesignados.Contains(profissionalId))
+                    agendamento.SetProfissionais([..agendamento.ProfissionaisDesignados, profissionalId]);
+
+                await context.SaveChangesAsync();
+                return Results.Ok(agendamento);
             });
 
             route.MapPatch("/{id:guid}/status", async (Guid id, AgendamentoContext context, [FromQuery] AgendamentoStatus status) =>

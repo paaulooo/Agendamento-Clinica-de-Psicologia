@@ -13,6 +13,9 @@ public static class AgendaRoutes
 				.Where(a => a.ProfissionaisDesignados.Contains(profissionalId))
 				.Select(a => new
 				{
+					id           = a.Id,
+					nomePaciente = a.NomePaciente,
+					horario      = a.Horario,
 					diaSemana = a.Data.DayOfWeek switch
 				{
 					DayOfWeek.Monday    => "Seg",
@@ -23,7 +26,7 @@ public static class AgendaRoutes
 					DayOfWeek.Saturday  => "Sab",
 					_                   => null
 				},
-					hora = a.Data.Hour,
+					hora   = a.Data.Hour,
 					status = a.Status
 				});
 			

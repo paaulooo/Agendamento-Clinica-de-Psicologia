@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Clínica de Psicologia</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f5f6fa;
+      --surface:   #ffffff;
+      --border:    #e2e6ed;
+      --text:      #1a1d23;
+      --muted:     #6b7280;
+      --primary:   #4f6ef7;
+      --primary-h: #3a56d4;
+      --danger:    #ef4444;
+      --danger-h:  #dc2626;
+      --success:   #10b981;
+      --warn:      #f59e0b;
+      --info:      #3b82f6;
+      --radius:    10px;
+      --shadow:    0 1px 4px rgba(0,0,0,.08);
+    }
+
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+    header .logo {
+      width: 34px; height: 34px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 18px;
+    }
+    header h1 { font-size: 16px; font-weight: 600; }
+    header span { font-size: 13px; color: var(--muted); margin-left: 4px; }
+    .api-config { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .api-config label { font-size: 12px; color: var(--muted); }
+    .api-config input {
+      font-size: 12px; padding: 5px 10px; border: 1px solid var(--border);
+      border-radius: 6px; width: 230px; color: var(--text);
+    }
+    #api-status { font-size: 11px; display: flex; align-items: center; gap: 5px; }
+    #api-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+    #api-dot.online  { background: var(--success); }
+    #api-dot.offline { background: var(--danger); }
+
+    /* ── Layout ── */
+    .layout { display: flex; min-height: calc(100vh - 60px); }
+
+    /* ── Sidebar ── */
+    aside {
+      width: 220px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 8px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      color: var(--muted);
+      transition: background .15s, color .15s;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-item:hover  { background: var(--bg); color: var(--text); }
+    .nav-item.active { background: #eef1fe; color: var(--primary); }
+    .nav-item .icon  { font-size: 17px; width: 20px; text-align: center; }
+    .nav-badge {
+      margin-left: auto; background: var(--primary);
+      color: #fff; font-size: 10px; font-weight: 700;
+      padding: 1px 7px; border-radius: 20px; min-width: 20px; text-align: center;
+    }
+
+    /* ── Main ── */
+    main { flex: 1; padding: 28px; overflow: auto; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .section-header h2 { font-size: 20px; font-weight: 700; }
+    .section-header p  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 500;
+      border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      transition: background .15s, opacity .15s;
+    }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-primary  { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled)  { background: var(--primary-h); }
+    .btn-danger   { background: var(--danger);  color: #fff; }
+    .btn-danger:hover:not(:disabled)   { background: var(--danger-h); }
+    .btn-ghost    { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg); color: var(--text); }
+    .btn-icon     { padding: 6px 8px; font-size: 14px; }
+
+    /* ── Card / Table ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .table-toolbar {
+      padding: 14px 16px;
+      display: flex; gap: 10px; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-box {
+      flex: 1; padding: 7px 12px; border: 1px solid var(--border);
+      border-radius: 7px; font-size: 13px; color: var(--text);
+      outline: none;
+    }
+    .search-box:focus { border-color: var(--primary); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: #f8f9fb; text-align: left; font-weight: 600;
+      padding: 10px 14px; color: var(--muted); border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafbff; }
+    tbody td { padding: 11px 14px; vertical-align: middle; }
+
+    .empty-row td { text-align: center; color: var(--muted); padding: 32px; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    }
+    .badge-green  { background: #d1fae5; color: #065f46; }
+    .badge-blue   { background: #dbeafe; color: #1e40af; }
+    .badge-yellow { background: #fef3c7; color: #92400e; }
+    .badge-red    { background: #fee2e2; color: #991b1b; }
+    .badge-gray   { background: #f3f4f6; color: #374151; }
+
+    /* ── Modal ── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.35);
+      display: none; align-items: center; justify-content: center; z-index: 200;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border-radius: 12px;
+      width: min(480px, 95vw); box-shadow: 0 8px 40px rgba(0,0,0,.18);
+      animation: slideUp .18s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px; border-bottom: 1px solid var(--border);
+    }
+    .modal-header h3 { font-size: 16px; font-weight: 700; }
+    .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted); line-height: 1; }
+    .modal-close:hover { color: var(--text); }
+    .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+    .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+    .form-group input, .form-group select {
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px;
+      font-size: 13px; color: var(--text); outline: none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ── Toast ── */
+    #toast-container {
+      position: fixed; bottom: 24px; right: 24px;
+      display: flex; flex-direction: column; gap: 8px; z-index: 300;
+    }
+    .toast {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 16px; box-shadow: 0 4px 20px rgba(0,0,0,.12);
+      font-size: 13px; display: flex; align-items: center; gap: 10px;
+      animation: slideInRight .2s ease;
+      max-width: 320px;
+    }
+    @keyframes slideInRight { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .toast.success .toast-icon { color: var(--success); }
+    .toast.error   .toast-icon { color: var(--danger); }
+    .toast.info    .toast-icon { color: var(--info); }
+    .toast-icon { font-size: 16px; }
+
+    /* ── Agenda section ── */
+    .prof-selector { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .prof-selector > label { font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .agenda-grid {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+    }
+    .agenda-day {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .agenda-day-header {
+      background: var(--primary); color: #fff;
+      text-align: center; padding: 8px 4px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .agenda-day-header .day-name { font-size: 12px; }
+    .agenda-day-header .day-date { font-size: 14px; margin-top: 2px; letter-spacing: 0; }
+    .agenda-day-header.today     { background: var(--primary-h); outline: 2px solid var(--primary); }
+    .agenda-day-body { padding: 8px; display: flex; flex-direction: column; gap: 6px; min-height: 80px; }
+    .agenda-item {
+      background: #eef1fe; border-radius: 6px; padding: 6px 8px; font-size: 12px;
+      position: relative;
+    }
+    .agenda-item .time { font-weight: 700; color: var(--primary); }
+    .agenda-item .agenda-item-actions {
+      display: none; position: absolute; top: 4px; right: 4px; gap: 2px;
+    }
+    .agenda-item:hover .agenda-item-actions { display: flex; }
+    .agenda-item-btn {
+      background: var(--primary); color: #fff; border: none; border-radius: 4px;
+      font-size: 10px; padding: 2px 5px; cursor: pointer; line-height: 1.4;
+    }
+    .agenda-item-btn:hover { background: var(--primary-h); }
+    .agenda-empty { color: var(--muted); font-size: 12px; text-align: center; padding-top: 16px; }
+
+    .loading { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; padding: 20px; }
+    .spinner {
+      width: 18px; height: 18px; border: 2px solid var(--border);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Navegação de semana ── */
+    .week-nav {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .week-label {
+      font-size: 14px; font-weight: 600; color: var(--text);
+      min-width: 180px; text-align: center;
+    }
+
+    /* ── Combobox paciente ── */
+    .combobox { position: relative; }
+    .combobox-input-wrap {
+      display: flex; align-items: center;
+      border: 1px solid var(--border); border-radius: 7px;
+      background: var(--surface); overflow: hidden;
+      transition: border-color .15s;
+    }
+    .combobox-input-wrap:focus-within { border-color: var(--primary); }
+    .combobox-input-wrap input {
+      flex: 1; padding: 8px 12px; border: none; outline: none;
+      font-size: 13px; color: var(--text); background: transparent;
+    }
+    .combobox-clear {
+      padding: 0 10px; font-size: 14px; color: var(--muted);
+      background: none; border: none; cursor: pointer; line-height: 1;
+      display: none;
+    }
+    .combobox-clear:hover { color: var(--danger); }
+    .combobox-dropdown {
+      display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.12);
+      z-index: 500; overflow: hidden;
+    }
+    .combobox-dropdown.open { display: block; }
+    .combobox-search-wrap {
+      padding: 8px; border-bottom: 1px solid var(--border);
+    }
+    .combobox-search {
+      width: 100%; padding: 7px 10px; border: 1px solid var(--border);
+      border-radius: 6px; font-size: 13px; outline: none;
+    }
+    .combobox-search:focus { border-color: var(--primary); }
+    .combobox-list { max-height: 200px; overflow-y: auto; }
+    .combobox-option {
+      padding: 9px 14px; font-size: 13px; cursor: pointer;
+      border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px;
+    }
+    .combobox-option:last-child { border-bottom: none; }
+    .combobox-option:hover, .combobox-option.focused { background: #eef1fe; }
+    .combobox-option .opt-name  { font-weight: 600; color: var(--text); }
+    .combobox-option .opt-sub   { font-size: 11px; color: var(--muted); }
+    .combobox-empty { padding: 14px; text-align: center; color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+  <div>
+    <h1>Central de Administração <span>/ Admin</span></h1>
+  </div>
+  <div class="api-config">
+    <label>API</label>
+    <input id="api-base" type="text" value="http://localhost:5188"/>
+    <div id="api-status">
+      <span id="api-dot"></span>
+      <span id="api-label">—</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside>
+    <button class="nav-item active" data-section="agendamentos">
+      <span class="icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="12" y1="11" x2="16" y2="11"/><line x1="12" y1="16" x2="16" y2="16"/><circle cx="8" cy="11" r=".5" fill="currentColor"/><circle cx="8" cy="16" r=".5" fill="currentColor"/></svg></span> Agendamentos
+      <span class="nav-badge" id="badge-agendamentos">0</span>
+    </button>
+    <button class="nav-item" data-section="pacientes">
+      <span class="icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Pacientes
+      <span class="nav-badge" id="badge-pacientes">0</span>
+    </button>
+    <button class="nav-item" data-section="profissionais">
+      <span class="icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span> Profissionais
+      <span class="nav-badge" id="badge-profissionais">0</span>
+    </button>
+    <button class="nav-item" data-section="agenda">
+      <span class="icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Agenda
+    </button>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main>
+
+    <!-- ════ AGENDAMENTOS ════ -->
+    <div class="section active" id="section-agendamentos">
+      <div class="section-header">
+        <div>
+          <h2>Agendamentos</h2>
+          <p>Gerencie todos os agendamentos da clínica</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('agendamento')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo agendamento</button>
+      </div>
+      <div class="card">
+        <div class="table-toolbar">
+          <input class="search-box" placeholder="Buscar por paciente…" id="search-agendamentos" oninput="filterAgendamentos()" />
+          <button class="btn btn-ghost" onclick="loadAgendamentos()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Atualizar</button>
+        </div>
+        <table id="table-agendamentos">
+          <thead>
+            <tr>
+              <th>Paciente</th>
+              <th>Horário</th>
+              <th>Status</th>
+              <th style="width:200px">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-agendamentos">
+            <tr><td colspan="4" class="loading"><div class="spinner"></div> Carregando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ PACIENTES ════ -->
+    <div class="section" id="section-pacientes">
+      <div class="section-header">
+        <div>
+          <h2>Pacientes</h2>
+          <p>Cadastro completo de pacientes</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('paciente')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo paciente</button>
+      </div>
+      <div class="card">
+        <div class="table-toolbar">
+          <input class="search-box" placeholder="Filtrar pacientes…" id="search-pacientes" oninput="filterPacientes()" />
+          <button class="btn btn-ghost" onclick="loadPacientes()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Atualizar</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Idade</th>
+              <th>Convênio</th>
+              <th>Telefone</th>
+              <th>E-mail</th>
+              <th style="width:140px">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-pacientes">
+            <tr><td colspan="6" class="loading"><div class="spinner"></div> Carregando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ PROFISSIONAIS ════ -->
+    <div class="section" id="section-profissionais">
+      <div class="section-header">
+        <div>
+          <h2>Profissionais</h2>
+          <p>Equipe de psicólogos e terapeutas</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('profissional')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo profissional</button>
+      </div>
+      <div class="card">
+        <div class="table-toolbar">
+          <input class="search-box" placeholder="Filtrar profissionais…" id="search-profissionais" oninput="filterProfissionais()" />
+          <button class="btn btn-ghost" onclick="loadProfissionais()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Atualizar</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>CRM / CRP</th>
+              <th>ID</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-profissionais">
+            <tr><td colspan="3" class="loading"><div class="spinner"></div> Carregando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ AGENDA ════ -->
+    <div class="section" id="section-agenda">
+      <div class="section-header">
+        <div>
+          <h2>Agenda Semanal</h2>
+          <p>Visualize e gerencie os horários por profissional</p>
+        </div>
+        <button class="btn btn-primary" id="btn-novo-agenda" onclick="novoAgendamentoAgenda()" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo Agendamento</button>
+      </div>
+      <div class="prof-selector">
+        <label style="font-size:13px;font-weight:600">Profissional:</label>
+        <div class="combobox" id="combobox-profissional" style="min-width:280px">
+          <div class="combobox-input-wrap" id="prof-trigger" onclick="toggleProfDropdown()" style="cursor:pointer">
+            <input type="text" id="agenda-prof-display"
+              placeholder="— selecione um profissional —"
+              autocomplete="off" readonly
+              style="cursor:pointer;pointer-events:none" />
+            <span id="prof-clear-btn" onclick="clearProfSelect(event)"
+              style="padding:0 6px;color:var(--muted);display:none;line-height:0">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </span>
+            <span style="padding:0 10px;color:var(--muted);line-height:0;flex-shrink:0">
+              <svg id="prof-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .15s"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </div>
+          <div class="combobox-dropdown" id="prof-dropdown">
+            <div class="combobox-search-wrap">
+              <input type="text" class="combobox-search" id="prof-search"
+                placeholder="Buscar profissional…" oninput="filterProfDropdown(this.value)" />
+            </div>
+            <div class="combobox-list" id="prof-list"></div>
+          </div>
+        </div>
+        <button class="btn btn-ghost" onclick="loadAgenda()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Atualizar</button>
+      </div>
+      <div id="agenda-container">
+        <p style="color:var(--muted);font-size:13px">Selecione um profissional para ver a agenda.</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ════ MODAL AGENDAMENTO ════ -->
+<div class="overlay" id="overlay-agendamento" onclick="closeModalOutside(event,'agendamento')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-agendamento-title">Novo Agendamento</h3>
+      <button class="modal-close" onclick="closeModal('agendamento')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="agendamento-id" />
+      <div class="form-group">
+        <label>Paciente</label>
+        <div class="combobox" id="combobox-paciente">
+          <div class="combobox-input-wrap">
+            <input type="text" id="agendamento-nomePaciente" placeholder="Selecione ou digite o nome…"
+              autocomplete="off" readonly
+              onfocus="openCombobox()" />
+            <button type="button" class="combobox-clear" id="combobox-clear" onclick="clearCombobox()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div>
+          <div class="combobox-dropdown" id="combobox-dropdown">
+            <div class="combobox-search-wrap">
+              <input type="text" class="combobox-search" id="combobox-search"
+                placeholder="Buscar paciente…" oninput="filterCombobox(this.value)" />
+            </div>
+            <div class="combobox-list" id="combobox-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Horário</label>
+        <input type="datetime-local" id="agendamento-horario" />
+      </div>
+      <div class="form-group">
+        <label>Profissional Responsável</label>
+        <select id="agendamento-profissional">
+          <option value="">— Nenhum / selecione —</option>
+        </select>
+      </div>
+      <div class="form-group" id="agendamento-status-group" style="display:none">
+        <label>Status</label>
+        <select id="agendamento-status">
+          <option value="0">Aguardando</option>
+          <option value="1">Em Atendimento</option>
+          <option value="2">Realizado</option>
+          <option value="3">Cancelado</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('agendamento')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveAgendamento()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL PACIENTE ════ -->
+<div class="overlay" id="overlay-paciente" onclick="closeModalOutside(event,'paciente')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-paciente-title">Novo Paciente</h3>
+      <button class="modal-close" onclick="closeModal('paciente')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="paciente-id" />
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome completo</label>
+          <input type="text" id="paciente-nome" placeholder="Nome" />
+        </div>
+        <div class="form-group">
+          <label>Idade</label>
+          <input type="number" id="paciente-idade" placeholder="0" min="0" max="120" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Convênio</label>
+          <input type="text" id="paciente-convenio" placeholder="Particular, Unimed…" />
+        </div>
+        <div class="form-group">
+          <label>Telefone</label>
+          <input type="tel" id="paciente-telefone" placeholder="(11) 99999-9999" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="paciente-email" placeholder="email@exemplo.com" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('paciente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePaciente()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL PROFISSIONAL ════ -->
+<div class="overlay" id="overlay-profissional" onclick="closeModalOutside(event,'profissional')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Novo Profissional</h3>
+      <button class="modal-close" onclick="closeModal('profissional')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nome completo</label>
+        <input type="text" id="profissional-nome" placeholder="Dr. João Silva" />
+      </div>
+      <div class="form-group">
+        <label>CRM / CRP</label>
+        <input type="text" id="profissional-crm" placeholder="CRP 06/12345" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('profissional')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProfissional()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL CONFIRMAR EXCLUSÃO ════ -->
+<div class="overlay" id="overlay-confirm" onclick="closeModalOutside(event,'confirm')">
+  <div class="modal" style="width:min(360px,95vw)">
+    <div class="modal-header">
+      <h3>Confirmar exclusão</h3>
+      <button class="modal-close" onclick="closeModal('confirm')">×</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-msg" style="font-size:14px;line-height:1.6"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('confirm')">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-btn">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════
+const apiInput = document.getElementById('api-base');
+const API = () => apiInput.value.replace(/\/$/, '');
+
+// ── Ícones SVG (estilo Lucide — contorno, sem emoji) ──────────────────────
+const _SVG = {
+  activity:      '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  calendar:      '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  check:         '<polyline points="20 6 9 17 4 12"/>',
+  checkCircle:   '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  chevronLeft:   '<polyline points="15 18 9 12 15 6"/>',
+  chevronRight:  '<polyline points="9 18 15 12 9 6"/>',
+  clipboard:     '<rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="12" y1="11" x2="16" y2="11"/><line x1="12" y1="16" x2="16" y2="16"/><circle cx="8" cy="11" r=".5" fill="currentColor"/><circle cx="8" cy="16" r=".5" fill="currentColor"/>',
+  clock:         '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  info:          '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+  pencil:        '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>',
+  plus:          '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  refresh:       '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>',
+  trash:         '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+  user:          '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  userPlus:      '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>',
+  x:             '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  xCircle:       '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
+  xSquare:       '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>',
+  chevronDown:   '<polyline points="6 9 12 15 18 9"/>',
+};
+function ic(name, size = 16, color = 'currentColor') {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0">${_SVG[name] ?? ''}</svg>`;
+}
+
+// ══════════════════════════════════════════
+//  ESTADO
+// ══════════════════════════════════════════
+let agendamentos = [];
+let pacientes    = [];
+let profissionais = [];
+
+// ══════════════════════════════════════════
+//  UTILITÁRIOS
+// ══════════════════════════════════════════
+function toast(msg, type = 'info') {
+  const icons = { success: ic('checkCircle'), error: ic('xCircle'), info: ic('info') };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(API() + path, {
+    headers: { 'Content-Type': 'application/json', ...opts.headers },
+    ...opts,
+  });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => res.statusText);
+    throw new Error(txt || res.statusText);
+  }
+  const ct = res.headers.get('content-type') || '';
+  return ct.includes('application/json') ? res.json() : null;
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function statusBadge(s) {
+  const map = {
+    'Aguardando':      ['badge-yellow', ic('clock',    12)],
+    'Em_Atendimento':  ['badge-blue',   ic('activity', 12)],
+    'Realizado':       ['badge-green',  ic('check',    12)],
+    'Cancelado':       ['badge-red',    ic('x',        12)],
+  };
+  const [cls, icon] = map[s] || ['badge-gray', '?'];
+  const label = s?.replace('_', ' ') ?? s;
+  return `<span class="badge ${cls}">${icon} ${label}</span>`;
+}
+
+function openModal(name) {
+  document.getElementById(`overlay-${name}`).classList.add('open');
+}
+function closeModal(name) {
+  document.getElementById(`overlay-${name}`).classList.remove('open');
+  if (name === 'agendamento') {
+    closeCombobox();
+    _agendaSaveCallback = false; // reset ao cancelar também
+  }
+}
+function closeModalOutside(e, name) {
+  if (e.target === document.getElementById(`overlay-${name}`)) closeModal(name);
+}
+
+// ══════════════════════════════════════════
+//  NAV
+// ══════════════════════════════════════════
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`section-${btn.dataset.section}`).classList.add('active');
+  });
+});
+
+// ══════════════════════════════════════════
+//  API STATUS
+// ══════════════════════════════════════════
+async function checkApi() {
+  const dot   = document.getElementById('api-dot');
+  const label = document.getElementById('api-label');
+  try {
+    await fetch(API() + '/agendamento', { signal: AbortSignal.timeout(3000) });
+    dot.className = 'online'; label.textContent = 'Online';
+  } catch {
+    dot.className = 'offline'; label.textContent = 'Offline';
+  }
+}
+apiInput.addEventListener('change', () => { checkApi(); loadAll(); });
+
+// ══════════════════════════════════════════
+//  AGENDAMENTOS
+// ══════════════════════════════════════════
+async function loadAgendamentos() {
+  const tbody = document.getElementById('tbody-agendamentos');
+  tbody.innerHTML = '<tr><td colspan="4" class="loading"><div class="spinner"></div> Carregando…</td></tr>';
+  try {
+    agendamentos = await apiFetch('/agendamento');
+    document.getElementById('badge-agendamentos').textContent = agendamentos.length;
+    renderAgendamentos(agendamentos);
+  } catch (e) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="4">Erro ao carregar: ${e.message}</td></tr>`;
+  }
+}
+
+function renderAgendamentos(list) {
+  const tbody = document.getElementById('tbody-agendamentos');
+  if (!list.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Nenhum agendamento encontrado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(a => `
+    <tr>
+      <td><strong>${a.nomePaciente}</strong></td>
+      <td>${fmtDate(a.horario)}</td>
+      <td>${statusBadge(a.status)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">
+          <button class="btn btn-ghost btn-icon" title="Editar" onclick='editAgendamento(${JSON.stringify(a)})'>${ic('pencil', 14)}</button>
+          <select class="btn btn-ghost" title="Mudar status" onchange="changeStatus('${a.id}', this.value, this)" style="font-size:12px;padding:5px 8px;flex:1;min-width:110px">
+            <option value="">Status…</option>
+            <option value="0">Aguardando</option>
+            <option value="1">Em Atendimento</option>
+            <option value="2">Realizado</option>
+            <option value="3">Cancelado</option>
+          </select>
+          <button class="btn btn-danger btn-icon" title="Cancelar" onclick="confirmDelete('agendamento','${a.id}','${a.nomePaciente}')">${ic('trash', 14)}</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function filterAgendamentos() {
+  const q = document.getElementById('search-agendamentos').value.toLowerCase();
+  renderAgendamentos(agendamentos.filter(a => a.nomePaciente.toLowerCase().includes(q)));
+}
+
+function editAgendamento(a) {
+  document.getElementById('modal-agendamento-title').textContent = 'Editar Agendamento';
+  document.getElementById('agendamento-id').value = a.id;
+  // preenche combobox
+  _comboboxPacienteId = null;
+  document.getElementById('agendamento-nomePaciente').value = a.nomePaciente;
+  document.getElementById('combobox-clear').style.display = 'block';
+  const match = pacientes.find(p => p.nome === a.nomePaciente);
+  if (match) _comboboxPacienteId = match.id;
+  // datetime-local needs "YYYY-MM-DDTHH:mm"
+  document.getElementById('agendamento-horario').value = a.horario ? a.horario.slice(0,16) : '';
+  document.getElementById('agendamento-status-group').style.display = 'flex';
+  const statusMap = { 'Aguardando': '0', 'Em_Atendimento': '1', 'Realizado': '2', 'Cancelado': '3' };
+  document.getElementById('agendamento-status').value = statusMap[a.status] ?? '0';
+  // preenche profissional — usa o primeiro da lista se existir
+  const profId = Array.isArray(a.profissionaisDesignados) && a.profissionaisDesignados.length
+    ? a.profissionaisDesignados[0]
+    : (a.profissionalId ?? '');
+  document.getElementById('agendamento-profissional').value = profId;
+  openModal('agendamento');
+}
+
+function openModal_agendamento_new(preSelectProfId = '') {
+  document.getElementById('modal-agendamento-title').textContent = 'Novo Agendamento';
+  document.getElementById('agendamento-id').value = '';
+  _comboboxPacienteId = null;
+  document.getElementById('agendamento-nomePaciente').value = '';
+  document.getElementById('combobox-clear').style.display = 'none';
+  document.getElementById('agendamento-horario').value = '';
+  document.getElementById('agendamento-status-group').style.display = 'none';
+  document.getElementById('agendamento-profissional').value = preSelectProfId;
+  openModal('agendamento');
+}
+// Rebind the button
+document.querySelector('[onclick="openModal(\'agendamento\')"]').onclick = () => openModal_agendamento_new();
+
+async function saveAgendamento() {
+  const id       = document.getElementById('agendamento-id').value;
+  const nome     = document.getElementById('agendamento-nomePaciente').value.trim();
+  const horario  = document.getElementById('agendamento-horario').value;
+  const statusVal = document.getElementById('agendamento-status').value;
+
+  if (!nome || !horario) { toast('Preencha todos os campos.', 'error'); return; }
+
+  const profIdModal = document.getElementById('agendamento-profissional').value;
+  const profId = profIdModal || (_agendaSaveCallback ? _agendaCurrentProfId : null);
+
+  // DEBUG — abre o console do navegador (F12) para ver estes valores
+  console.log('[saveAgendamento]', {
+    profIdModal,
+    _agendaSaveCallback,
+    _agendaCurrentProfId,
+    profId,
+    id_agendamento: id,
+  });
+
+  const body = {
+    nomePaciente: nome,
+    horario: new Date(horario).toISOString(),
+  };
+
+  try {
+    let savedId = id;
+    if (id) {
+      await apiFetch(`/agendamento/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+      await apiFetch(`/agendamento/${id}/status?status=${statusVal}`, { method: 'PATCH' });
+      toast('Agendamento atualizado!', 'success');
+    } else {
+      const created = await apiFetch('/agendamento', { method: 'POST', body: JSON.stringify(body) });
+      savedId = created?.id;
+      console.log('[saveAgendamento] POST criado, id retornado:', savedId, '| objeto:', created);
+      toast('Agendamento criado!', 'success');
+    }
+
+    // Associa o profissional via endpoint dedicado
+    console.log('[saveAgendamento] vai associar profissional?', { profId, savedId });
+    if (profId && savedId) {
+      try {
+        await apiFetch(`/agendamento/${savedId}/profissional?profissionalId=${profId}`, { method: 'PATCH' });
+        console.log('[saveAgendamento] profissional associado com sucesso');
+      } catch (ePatch) {
+        console.error('[saveAgendamento] ERRO ao associar profissional:', ePatch.message);
+        toast('Agendamento criado, mas falha ao associar profissional: ' + ePatch.message, 'error');
+      }
+    } else {
+      console.warn('[saveAgendamento] PATCH não enviado — profId ou savedId vazio', { profId, savedId });
+    }
+
+    const reloadAgenda = _agendaSaveCallback;
+    closeModal('agendamento');
+    loadAgendamentos();
+    if (reloadAgenda) loadAgenda();
+  } catch (e) {
+    toast('Erro: ' + e.message, 'error');
+  }
+}
+
+async function changeStatus(id, status, el) {
+  if (!status) return;
+  try {
+    await apiFetch(`/agendamento/${id}/status?status=${status}`, { method: 'PATCH' });
+    toast('Status atualizado!', 'success');
+    el.value = '';
+    loadAgendamentos();
+  } catch (e) {
+    toast('Erro: ' + e.message, 'error');
+    el.value = '';
+  }
+}
+
+// ══════════════════════════════════════════
+//  PACIENTES
+// ══════════════════════════════════════════
+async function loadPacientes() {
+  const tbody = document.getElementById('tbody-pacientes');
+  tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div> Carregando…</td></tr>';
+  try {
+    pacientes = await apiFetch('/pacientes');
+    document.getElementById('badge-pacientes').textContent = pacientes.length;
+    renderPacientes(pacientes);
+  } catch (e) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+function renderPacientes(list) {
+  const tbody = document.getElementById('tbody-pacientes');
+  if (!list.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhum paciente encontrado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(p => `
+    <tr>
+      <td><strong>${p.nome}</strong></td>
+      <td>${p.idade} anos</td>
+      <td>${p.convenio || '—'}</td>
+      <td>${p.telefone || '—'}</td>
+      <td>${p.email || '—'}</td>
+      <td>
+        <button class="btn btn-ghost btn-icon" title="Editar" onclick='editPaciente(${JSON.stringify(p)})'>${ic('pencil', 14)}</button>
+        <button class="btn btn-danger btn-icon" title="Excluir" onclick="confirmDelete('paciente','${p.id}','${p.nome}')">${ic('trash', 14)}</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterPacientes() {
+  const q = document.getElementById('search-pacientes').value.toLowerCase();
+  renderPacientes(pacientes.filter(p => p.nome.toLowerCase().includes(q)));
+}
+
+function editPaciente(p) {
+  document.getElementById('modal-paciente-title').textContent = 'Editar Paciente';
+  document.getElementById('paciente-id').value    = p.id;
+  document.getElementById('paciente-nome').value  = p.nome;
+  document.getElementById('paciente-idade').value = p.idade;
+  document.getElementById('paciente-convenio').value = p.convenio;
+  document.getElementById('paciente-telefone').value = p.telefone;
+  document.getElementById('paciente-email').value = p.email;
+  openModal('paciente');
+}
+
+document.querySelector('[onclick="openModal(\'paciente\')"]').onclick = () => {
+  document.getElementById('modal-paciente-title').textContent = 'Novo Paciente';
+  document.getElementById('paciente-id').value    = '';
+  document.getElementById('paciente-nome').value  = '';
+  document.getElementById('paciente-idade').value = '';
+  document.getElementById('paciente-convenio').value = '';
+  document.getElementById('paciente-telefone').value = '';
+  document.getElementById('paciente-email').value = '';
+  openModal('paciente');
+};
+
+async function savePaciente() {
+  const id       = document.getElementById('paciente-id').value;
+  const nome     = document.getElementById('paciente-nome').value.trim();
+  const idade    = parseInt(document.getElementById('paciente-idade').value);
+  const convenio = document.getElementById('paciente-convenio').value.trim();
+  const telefone = document.getElementById('paciente-telefone').value.trim();
+  const email    = document.getElementById('paciente-email').value.trim();
+
+  if (!nome || isNaN(idade)) { toast('Nome e idade são obrigatórios.', 'error'); return; }
+
+  const body = { nome, idade, convenio, telefone, email };
+
+  try {
+    if (id) {
+      await apiFetch(`/pacientes/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+      toast('Paciente atualizado!', 'success');
+    } else {
+      await apiFetch('/pacientes', { method: 'POST', body: JSON.stringify(body) });
+      toast('Paciente cadastrado!', 'success');
+    }
+    closeModal('paciente');
+    loadPacientes();
+  } catch (e) {
+    toast('Erro: ' + e.message, 'error');
+  }
+}
+
+// ══════════════════════════════════════════
+//  PROFISSIONAIS
+// ══════════════════════════════════════════
+async function loadProfissionais() {
+  const tbody = document.getElementById('tbody-profissionais');
+  tbody.innerHTML = '<tr><td colspan="3" class="loading"><div class="spinner"></div> Carregando…</td></tr>';
+  try {
+    profissionais = await apiFetch('/profissional');
+    document.getElementById('badge-profissionais').textContent = profissionais.length;
+    renderProfissionais(profissionais);
+    populateProfSelect();
+  } catch (e) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="3">Erro: ${e.message}</td></tr>`;
+  }
+}
+
+function renderProfissionais(list) {
+  const tbody = document.getElementById('tbody-profissionais');
+  if (!list.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="3">Nenhum profissional cadastrado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(p => `
+    <tr>
+      <td><strong>${p.nome}</strong></td>
+      <td><span class="badge badge-blue">${p.crm}</span></td>
+      <td style="font-size:11px;color:var(--muted);font-family:monospace">${p.id}</td>
+    </tr>`).join('');
+}
+
+function filterProfissionais() {
+  const q = document.getElementById('search-profissionais').value.toLowerCase();
+  renderProfissionais(profissionais.filter(p =>
+    p.nome.toLowerCase().includes(q) || p.crm.toLowerCase().includes(q)));
+}
+
+async function saveProfissional() {
+  const nome = document.getElementById('profissional-nome').value.trim();
+  const crm  = document.getElementById('profissional-crm').value.trim();
+  if (!nome || !crm) { toast('Preencha todos os campos.', 'error'); return; }
+  try {
+    await apiFetch('/profissional', {
+      method: 'POST',
+      body: JSON.stringify({ nomeProfissional: nome, crm }),
+    });
+    toast('Profissional cadastrado!', 'success');
+    closeModal('profissional');
+    document.getElementById('profissional-nome').value = '';
+    document.getElementById('profissional-crm').value  = '';
+    loadProfissionais();
+  } catch (e) {
+    toast('Erro: ' + e.message, 'error');
+  }
+}
+
+function populateProfSelect() {
+  // Reconstrói a lista visual do dropdown customizado
+  renderProfList('');
+
+  // Restaura seleção atual (se o profissional ainda existe após reload)
+  if (_agendaCurrentProfId) {
+    const still = profissionais.find(p => p.id === _agendaCurrentProfId);
+    if (!still) selectProfOption('', '');
+  }
+
+  // Popula o select do modal de agendamento
+  const modalSel = document.getElementById('agendamento-profissional');
+  const curModal = modalSel.value;
+  modalSel.innerHTML = '<option value="">— Nenhum / selecione —</option>' +
+    profissionais.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+  if (curModal) modalSel.value = curModal;
+}
+
+// ══════════════════════════════════════════
+//  AGENDA
+// ══════════════════════════════════════════
+let _agendaWeekOffset      = 0;
+let _agendaAllItems        = [];
+let _agendaSaveCallback    = false;
+let _agendaCurrentProfId   = null; // ID do profissional atualmente selecionado na aba Agenda
+let _agendaCurrentProfNome = '';   // Nome exibido
+
+// ── Dropdown customizado de profissional ───────────────────────────────────
+function toggleProfDropdown() {
+  const dd = document.getElementById('prof-dropdown');
+  const isOpen = dd.classList.contains('open');
+  if (isOpen) { closeProfDropdown(); return; }
+  renderProfList('');
+  dd.classList.add('open');
+  document.getElementById('prof-chevron').style.transform = 'rotate(180deg)';
+  setTimeout(() => document.getElementById('prof-search').focus(), 50);
+}
+
+function closeProfDropdown() {
+  document.getElementById('prof-dropdown').classList.remove('open');
+  document.getElementById('prof-chevron').style.transform = '';
+  document.getElementById('prof-search').value = '';
+}
+
+function clearProfSelect(e) {
+  e.stopPropagation();
+  selectProfOption('', '');
+}
+
+function selectProfOption(id, nome) {
+  _agendaCurrentProfId   = id || null;
+  _agendaCurrentProfNome = nome;
+  document.getElementById('agenda-prof-display').value = nome;
+  document.getElementById('prof-clear-btn').style.display = id ? 'inline-flex' : 'none';
+  document.getElementById('btn-novo-agenda').disabled = !id;
+  closeProfDropdown();
+  _agendaWeekOffset = 0;
+  loadAgenda();
+}
+
+function filterProfDropdown(q) { renderProfList(q); }
+
+function renderProfList(q) {
+  const list   = document.getElementById('prof-list');
+  const lower  = q.toLowerCase();
+  const filtered = profissionais.filter(p =>
+    p.nome.toLowerCase().includes(lower) ||
+    (p.crm || '').toLowerCase().includes(lower)
+  );
+  if (!filtered.length) {
+    list.innerHTML = '<div class="combobox-empty">Nenhum profissional encontrado.</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(p => `
+    <div class="combobox-option"
+         data-id="${p.id}"
+         data-nome="${p.nome.replace(/"/g, '&quot;')}">
+      <span class="opt-name">${highlight(p.nome, q)}</span>
+      <span class="opt-sub">${p.crm || ''}</span>
+    </div>`).join('');
+}
+
+// Event delegation para a lista de profissionais
+document.getElementById('prof-list').addEventListener('mousedown', e => {
+  const opt = e.target.closest('.combobox-option');
+  if (!opt) return;
+  e.preventDefault();
+  selectProfOption(opt.dataset.id, opt.dataset.nome);
+});
+
+// Fecha ao clicar fora
+document.addEventListener('click', e => {
+  if (!document.getElementById('combobox-profissional').contains(e.target)) {
+    closeProfDropdown();
+  }
+});
+
+function getWeekMonday(offset) {
+  const now = new Date();
+  const dow = now.getDay();
+  const diff = (dow === 0 ? -6 : 1 - dow);
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff + offset * 7);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
+function getWeekDates(offset) {
+  const monday = getWeekMonday(offset);
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+}
+
+function isSameDay(d1, d2) {
+  return d1.getFullYear() === d2.getFullYear() &&
+         d1.getMonth()    === d2.getMonth()    &&
+         d1.getDate()     === d2.getDate();
+}
+
+function fmtShort(date) {
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+
+function onProfChange() {
+  // Mantido para compatibilidade; lógica migrada para selectProfOption()
+  _agendaWeekOffset = 0;
+  loadAgenda();
+}
+
+function changeWeek(delta) {
+  _agendaWeekOffset += delta;
+  renderAgenda();
+}
+
+function goToday() {
+  _agendaWeekOffset = 0;
+  renderAgenda();
+}
+
+function novoAgendamentoAgenda() {
+  _agendaSaveCallback = true;
+  openModal_agendamento_new(_agendaCurrentProfId || '');
+  document.getElementById('modal-agendamento-title').textContent =
+    `Novo Agendamento — ${_agendaCurrentProfNome || ''}`;
+}
+
+async function loadAgenda() {
+  const id  = _agendaCurrentProfId;
+  const box = document.getElementById('agenda-container');
+  if (!id) {
+    box.innerHTML = '<p style="color:var(--muted);font-size:13px">Selecione um profissional para ver a agenda.</p>';
+    return;
+  }
+  box.innerHTML = '<div class="loading"><div class="spinner"></div> Carregando…</div>';
+  try {
+    _agendaAllItems = await apiFetch(`/agenda/${id}`);
+    renderAgenda();
+  } catch (e) {
+    box.innerHTML = `<p style="color:var(--danger);font-size:13px">Erro: ${e.message}</p>`;
+  }
+}
+
+function renderAgenda() {
+  const dayNames  = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const weekDates = getWeekDates(_agendaWeekOffset);
+  const today     = new Date();
+
+  const weekStart = new Date(weekDates[0]); weekStart.setHours(0,0,0,0);
+  const weekEnd   = new Date(weekDates[5]); weekEnd.setHours(23,59,59,999);
+
+  const weekItems = _agendaAllItems.filter(i => {
+    const d = new Date(i.horario);
+    return d >= weekStart && d <= weekEnd;
+  });
+
+  const byDay = weekDates.map(date => ({
+    date,
+    items: weekItems
+      .filter(i => isSameDay(new Date(i.horario), date))
+      .sort((a, b) => new Date(a.horario) - new Date(b.horario))
+  }));
+
+  const rangeLabel  = `${fmtShort(weekDates[0])} – ${fmtShort(weekDates[5])}`;
+  const totalSemana = weekItems.length;
+
+  const box = document.getElementById('agenda-container');
+  box.innerHTML = `
+    <div class="week-nav">
+      <button class="btn btn-ghost" onclick="changeWeek(-1)">${ic('chevronLeft', 14)} Anterior</button>
+      <button class="btn btn-ghost" onclick="goToday()">Hoje</button>
+      <span class="week-label">${ic('calendar', 15)} ${rangeLabel}</span>
+      <button class="btn btn-ghost" onclick="changeWeek(1)">Próxima ${ic('chevronRight', 14)}</button>
+    </div>
+    <div class="agenda-grid">
+      ${byDay.map(({ date, items }) => {
+        const isToday  = isSameDay(date, today);
+        const dowIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
+        return `
+        <div class="agenda-day">
+          <div class="agenda-day-header${isToday ? ' today' : ''}">
+            <div class="day-name">${dayNames[dowIndex]}</div>
+            <div class="day-date">${fmtShort(date)}</div>
+          </div>
+          <div class="agenda-day-body">
+            ${items.length
+              ? items.map((i, idx) => {
+                  const horaStr = new Date(i.horario)
+                    .toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                  return `
+                  <div class="agenda-item" data-idx="${idx}" data-day="${date.toISOString()}">
+                    <div class="time">${horaStr}</div>
+                    <div style="margin:3px 0">${statusBadge(i.status)}</div>
+                    <div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
+                         title="${(i.nomePaciente ?? '').replace(/"/g,'&quot;')}">${i.nomePaciente ?? ''}</div>
+                    <div class="agenda-item-actions">
+                      <button class="agenda-item-btn agenda-edit-btn"
+                              data-id="${i.id}"
+                              data-nome="${(i.nomePaciente ?? '').replace(/"/g,'&quot;')}"
+                              data-horario="${i.horario}"
+                              data-status="${i.status}"
+                              title="Editar">${ic('pencil', 11)}</button>
+                    </div>
+                  </div>`;
+                }).join('')
+              : '<div class="agenda-empty">Livre</div>'}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <p style="margin-top:12px;font-size:12px;color:var(--muted)">
+      ${totalSemana} agendamento(s) nesta semana · ${_agendaAllItems.length} no total para este profissional.
+    </p>`;
+
+  // Event delegation — evita problema de aspas em onclick inline
+  box.querySelectorAll('.agenda-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      _agendaSaveCallback = true;
+      editAgendamento({
+        id:                      btn.dataset.id,
+        nomePaciente:            btn.dataset.nome,
+        horario:                 btn.dataset.horario,
+        status:                  btn.dataset.status,
+        // passa o profissional atual para preservar a associação ao salvar
+        profissionaisDesignados: _agendaCurrentProfId ? [_agendaCurrentProfId] : [],
+      });
+    });
+  });
+}
+
+// ══════════════════════════════════════════
+//  EXCLUSÃO / CANCELAMENTO
+// ══════════════════════════════════════════
+function confirmDelete(entity, id, nome) {
+  const msgs = {
+    agendamento: `Cancelar o agendamento de <strong>${nome}</strong>? O status será alterado para "Cancelado".`,
+    paciente:    `Excluir o paciente <strong>${nome}</strong>? Esta ação não pode ser desfeita.`,
+  };
+  document.getElementById('confirm-msg').innerHTML = msgs[entity] || 'Confirma a exclusão?';
+  document.getElementById('confirm-btn').onclick = async () => {
+    try {
+      if (entity === 'agendamento') {
+        await apiFetch(`/agendamento/${id}`, { method: 'DELETE' });
+        toast('Agendamento cancelado.', 'success');
+        loadAgendamentos();
+      } else if (entity === 'paciente') {
+        await apiFetch(`/pacientes/${id}`, { method: 'DELETE' });
+        toast('Paciente excluído.', 'success');
+        loadPacientes();
+      }
+      closeModal('confirm');
+    } catch (e) {
+      toast('Erro: ' + e.message, 'error');
+    }
+  };
+  openModal('confirm');
+}
+
+// ══════════════════════════════════════════
+//  COMBOBOX PACIENTE
+// ══════════════════════════════════════════
+let _comboboxPacienteId = null; // guid do paciente selecionado (pode ser null se digitado livre)
+
+function openCombobox() {
+  renderComboboxList('');
+  document.getElementById('combobox-dropdown').classList.add('open');
+  setTimeout(() => document.getElementById('combobox-search').focus(), 50);
+}
+
+function closeCombobox() {
+  document.getElementById('combobox-dropdown').classList.remove('open');
+  document.getElementById('combobox-search').value = '';
+}
+
+function clearCombobox() {
+  _comboboxPacienteId = null;
+  document.getElementById('agendamento-nomePaciente').value = '';
+  document.getElementById('combobox-clear').style.display = 'none';
+  closeCombobox();
+}
+
+function selectComboboxOption(id, nome) {
+  _comboboxPacienteId = id;
+  document.getElementById('agendamento-nomePaciente').value = nome;
+  document.getElementById('combobox-clear').style.display = 'block';
+  closeCombobox();
+}
+
+function filterCombobox(q) {
+  renderComboboxList(q);
+}
+
+function renderComboboxList(q) {
+  const list = document.getElementById('combobox-list');
+  const lower = q.toLowerCase();
+  const filtered = pacientes.filter(p =>
+    p.nome.toLowerCase().includes(lower) ||
+    (p.convenio || '').toLowerCase().includes(lower)
+  );
+  if (!filtered.length) {
+    list.innerHTML = `<div class="combobox-empty">Nenhum paciente encontrado.</div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(p => `
+    <div class="combobox-option"
+         data-id="${p.id}"
+         data-nome="${p.nome.replace(/"/g, '&quot;')}">
+      <span class="opt-name">${highlight(p.nome, q)}</span>
+      <span class="opt-sub">${p.convenio || 'Sem convênio'} · ${p.idade} anos · ${p.telefone || '—'}</span>
+    </div>`).join('');
+}
+
+// Usa mousedown + preventDefault para que o blur do search não feche o dropdown
+// antes do clique na opção ser registrado
+document.getElementById('combobox-list').addEventListener('mousedown', e => {
+  const opt = e.target.closest('.combobox-option');
+  if (!opt) return;
+  e.preventDefault();
+  selectComboboxOption(opt.dataset.id, opt.dataset.nome);
+});
+
+function highlight(text, q) {
+  if (!q) return text;
+  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return text.replace(re, '<mark style="background:#fde68a;border-radius:2px">$1</mark>');
+}
+
+// Fecha ao clicar fora
+document.addEventListener('click', e => {
+  if (!document.getElementById('combobox-paciente').contains(e.target)) {
+    closeCombobox();
+  }
+});
+
+// Tecla Escape fecha
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeCombobox();
+});
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+function loadAll() {
+  loadAgendamentos();
+  loadPacientes();
+  loadProfissionais();
+}
+
+checkApi();
+loadAll();
+setInterval(checkApi, 15000);
+</script>
+</body>
+</html>
