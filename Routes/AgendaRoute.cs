@@ -1,5 +1,4 @@
 ﻿using Agendamento.Data;
-using Agendamento.Models;
 using Microsoft.AspNetCore.Mvc;
 
 public static class AgendaRoutes
