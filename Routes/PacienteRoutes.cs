@@ -12,7 +12,7 @@ public static class PacienteRoutes
             return db.Pacientes.ToList();
         });
 
-        app.MapGet("/pacientes/{id}", (int id, [FromServices] PacienteContext db) =>
+        app.MapGet("/pacientes/{id:guid}", (Guid id, [FromServices] PacienteContext db) =>
         {
             var paciente = db.Pacientes.Find(id);
             return paciente is not null ? Results.Ok(paciente) : Results.NotFound();
@@ -25,7 +25,7 @@ public static class PacienteRoutes
             return Results.Ok(paciente);
         });
 
-        app.MapPut("/pacientes/{id}", (int id, Paciente input, [FromServices] PacienteContext db) =>
+        app.MapPut("/pacientes/{id:guid}", (Guid id, Paciente input, [FromServices] PacienteContext db) =>
         {
             var paciente = db.Pacientes.Find(id);
             if (paciente is null) return Results.NotFound();
@@ -40,7 +40,7 @@ public static class PacienteRoutes
             return Results.Ok(paciente);
         });
 
-        app.MapDelete("/pacientes/{id}", (int id, [FromServices] PacienteContext db) =>
+        app.MapDelete("/pacientes/{id:guid}", (Guid id, [FromServices] PacienteContext db) =>
         {
             var paciente = db.Pacientes.Find(id);
             if (paciente is null) return Results.NotFound();
