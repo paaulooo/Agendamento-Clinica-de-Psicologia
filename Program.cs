@@ -17,8 +17,26 @@ builder.Services.AddDbContext<ProfissionalContext>(options =>
 builder.Services.AddDbContext<PacienteContext>(options =>
     options.UseNpgsql(connectionString));
 
+// cors 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5188")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
+
+
+// Antes do app.UseAuthorization()
+app.UseCors("AllowFrontend");
+
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
